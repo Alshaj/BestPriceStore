@@ -52,7 +52,8 @@ namespace BestPriceStore.Services.AuthService
                     StoreName = user.StoreName,
                     PhoneNumber = user.PhoneNumber,
                     Location = user.Location,
-                    IsActive = user.IsActive
+                    IsActive = user.IsActive,
+                    Role = "Representative"
                 });
             }
             
@@ -77,6 +78,9 @@ namespace BestPriceStore.Services.AuthService
                 };
             }
             var token = GenerateJwtToken(user);
+            var roles = await _userManager.GetRolesAsync(user);
+            var userRole = roles.FirstOrDefault() ?? "Representative";
+
             return new ApiResponse<LoginResponseDTO>(200, new LoginResponseDTO
             {
                 Id = user.Id,
@@ -84,7 +88,8 @@ namespace BestPriceStore.Services.AuthService
                 StoreName = user.StoreName,
                 PhoneNumber = user.PhoneNumber,
                 Location = user.Location,
-                IsActive =  user.IsActive
+                IsActive =  user.IsActive,
+                Role = userRole
             });
         }
 
@@ -112,6 +117,33 @@ namespace BestPriceStore.Services.AuthService
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<ApiResponse<MeResponseDTO>> GetMeAsync(int userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                return new ApiResponse<MeResponseDTO>
+                {
+                    StatusCode = 404,
+                    Success = false,
+                    Errors = new List<string> { "User not found." }
+                };
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var userRole = roles.FirstOrDefault() ?? "Representative";
+
+            return new ApiResponse<MeResponseDTO>(200, new MeResponseDTO
+            {
+                Id = user.Id,
+                StoreName = user.StoreName,
+                PhoneNumber = user.PhoneNumber,
+                Location = user.Location,
+                IsActive = user.IsActive,
+                Role = userRole
+            });
         }
     }
 }

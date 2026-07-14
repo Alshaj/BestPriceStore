@@ -1,5 +1,4 @@
 C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\obj\Release\net8.0\PubTmp\Out\BestPriceStore.exe
-C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\obj\Release\net8.0\PubTmp\Out\appsettings.Development.json
 C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\obj\Release\net8.0\PubTmp\Out\appsettings.json
 C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\obj\Release\net8.0\PubTmp\Out\BestPriceStore.dll
 C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\obj\Release\net8.0\PubTmp\Out\BestPriceStore.deps.json

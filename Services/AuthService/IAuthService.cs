@@ -8,5 +8,6 @@ namespace BestPriceStore.Services.AuthService
     {
         Task<ApiResponse<RegisterResponseDTO>> RegisterAsync(RegisterRequestDTO registerRequestDTO);
         Task<ApiResponse<LoginResponseDTO>> LoginAsync(LoginRequestDTO loginRequestDTO);
+        Task<ApiResponse<MeResponseDTO>> GetMeAsync(int userId);
     }
 }

@@ -1,9 +1,10 @@
-﻿using BestPriceStore.Data;
+using BestPriceStore.Data;
 using BestPriceStore.DTOs;
 using BestPriceStore.DTOs.AuthDTOs;
 using BestPriceStore.Services.AuthService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BestPriceStore.Controllers
 {
@@ -50,6 +51,24 @@ namespace BestPriceStore.Controllers
             }
             return Ok(response);
 
+        }
+
+        [HttpGet("me")]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> GetMe()
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+            {
+                return Unauthorized(new ApiResponse<MeResponseDTO>(401, "User is not authenticated properly."));
+            }
+
+            var response = await _authService.GetMeAsync(userId);
+            if (response.StatusCode != 200)
+            {
+                return StatusCode((int)response.StatusCode, response);
+            }
+            return Ok(response);
         }
     }
 }

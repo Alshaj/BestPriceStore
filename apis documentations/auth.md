@@ -6,7 +6,7 @@ This document provides all the necessary details to integrate with the authentic
 
 ## 1. Register Endpoint
 
-- **URL**: `/api/Auth/Register`
+- **URL**: `/api/Auth/register`
 - **Method**: `POST`
 - **Content-Type**: `application/json`
 - **Authentication Required**: No
@@ -37,7 +37,7 @@ The response will contain a long-lived JWT token that can be used for subsequent
 
 ### Responses
 
-#### Successful Registration (200 OK)
+#### Successful Registration (201 Created)
 Returns the generated JWT token along with user details.
 
 ```json
@@ -45,10 +45,13 @@ Returns the generated JWT token along with user details.
   "statusCode": 201,
   "success": true,
   "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "id": 1,
     "storeName": "johndoe",
     "phoneNumber": "+1234567890",
-    "location": "New York, USA"
+    "location": "New York, USA",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "isActive": false,
+    "role": "Representative"
   },
   "errors": null
 }
@@ -73,7 +76,7 @@ If the request is malformed, passwords do not match, or validation fails (e.g., 
 
 ## 2. Login Endpoint
 
-- **URL**: `/api/Auth/Login`
+- **URL**: `/api/Auth/login`
 - **Method**: `POST`
 - **Content-Type**: `application/json`
 - **Authentication Required**: No
@@ -104,10 +107,13 @@ Returns the generated JWT token and user details.
   "statusCode": 200,
   "success": true,
   "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "id": 1,
     "storeName": "johndoe",
     "phoneNumber": "+1234567890",
-    "location": "New York, USA"
+    "location": "New York, USA",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "isActive": true,
+    "role": "Representative"
   },
   "errors": null
 }
@@ -126,6 +132,45 @@ If the phone number is not found or the password is incorrect.
   ]
 }
 ```
+
+---
+
+## 3. Get Current User (Me) Endpoint
+
+- **URL**: `/api/Auth/me`
+- **Method**: `GET`
+- **Authentication Required**: Yes (Bearer Token)
+
+### Description
+Returns the details and role of the currently authenticated user based on their JWT token. This is extremely useful for the frontend to rehydrate user state on page reloads.
+
+### Request Headers
+| Header | Value |
+|--------|-------|
+| `Authorization` | `Bearer {your_jwt_token}` |
+
+### Responses
+
+#### Success (200 OK)
+
+```json
+{
+  "statusCode": 200,
+  "success": true,
+  "errors": null,
+  "data": {
+    "id": 1,
+    "storeName": "johndoe",
+    "phoneNumber": "+1234567890",
+    "location": "New York, USA",
+    "isActive": true,
+    "role": "Representative"
+  }
+}
+```
+
+#### Unauthorized (401 Unauthorized)
+If the user's token is invalid, missing, or expired.
 
 ---
 

@@ -152,3 +152,46 @@ Returned if the user is already suspended.
   }
 }
 ```
+
+---
+
+## 4. Get All Representatives
+
+Retrieves a list of all users who have the role of "Representative". This allows the Admin to view their current status (`isActive`) in order to approve or suspend them.
+
+- **URL:** `/api/Users/representatives`
+- **Method:** `GET`
+- **Authentication:** Required (Bearer Token)
+- **Role Required:** Admin
+
+### Request Headers
+| Header | Value |
+|--------|-------|
+| `Authorization` | `Bearer {admin_jwt_token}` |
+
+### Responses
+
+**Success (200 OK):**
+```json
+{
+  "statusCode": 200,
+  "success": true,
+  "errors": null,
+  "data": [
+    {
+      "id": 2,
+      "storeName": "Mukalla Store",
+      "phoneNumber": "774474895",
+      "location": "Mukalla",
+      "isActive": false
+    },
+    {
+      "id": 5,
+      "storeName": "Sanaa Supermarket",
+      "phoneNumber": "777777777",
+      "location": "Sanaa",
+      "isActive": true
+    }
+  ]
+}
+```

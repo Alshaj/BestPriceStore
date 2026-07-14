@@ -65,5 +65,17 @@ namespace BestPriceStore.Controllers
             }
             return Ok(response);
         }
+
+        [HttpGet("representatives")]
+        [Authorize(Roles = "Admin")] // Only Admin can view all representatives
+        public async Task<IActionResult> GetAllRepresentatives()
+        {
+            var response = await _userService.GetAllRepresentativesAsync();
+            if (response.StatusCode != 200)
+            {
+                return StatusCode((int)response.StatusCode, response);
+            }
+            return Ok(response);
+        }
     }
 }
