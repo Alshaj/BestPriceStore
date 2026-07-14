@@ -139,4 +139,6 @@ C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\obj\Debug\net8.0\
 C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\obj\Debug\net8.0\ref\BestPriceStore.dll
 C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\obj\Debug\net8.0\BestPriceStore.sourcelink.json
+C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\bin\Debug\net8.0\AWSSDK.Core.dll
+C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\bin\Debug\net8.0\AWSSDK.S3.dll
 C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

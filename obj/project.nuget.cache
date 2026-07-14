@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "yeNkw8gxQQA=",
+  "dgSpecHash": "o0g0M5L/eII=",
   "success": true,
   "projectFilePath": "C:\\Users\\abdurahman\\source\\repos\\BestPriceStore\\BestPriceStore\\BestPriceStore.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\abdurahman\\.nuget\\packages\\awssdk.core\\4.0.100.3\\awssdk.core.4.0.100.3.nupkg.sha512",
+    "C:\\Users\\abdurahman\\.nuget\\packages\\awssdk.s3\\4.0.101\\awssdk.s3.4.0.101.nupkg.sha512",
     "C:\\Users\\abdurahman\\.nuget\\packages\\azure.core\\1.25.0\\azure.core.1.25.0.nupkg.sha512",
     "C:\\Users\\abdurahman\\.nuget\\packages\\azure.identity\\1.7.0\\azure.identity.1.7.0.nupkg.sha512",
     "C:\\Users\\abdurahman\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
