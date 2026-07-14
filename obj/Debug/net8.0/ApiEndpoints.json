@@ -125,6 +125,22 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "BestPriceStore.Controllers.ImagesController",
+    "Method": "UploadImage",
+    "RelativePath": "api/Images/upload",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "file",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "BestPriceStore.Controllers.UsersController",
     "Method": "Approve",
     "RelativePath": "api/Users/{id}/approve",
