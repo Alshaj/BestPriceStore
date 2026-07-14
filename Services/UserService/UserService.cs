@@ -2,6 +2,7 @@ using BestPriceStore.Data;
 using BestPriceStore.DTOs;
 using BestPriceStore.DTOs.UserDTOs;
 using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -123,6 +124,21 @@ namespace BestPriceStore.Services.UserService
                 Success = false,
                 Errors = result.Errors.Select(e => e.Description).ToList()
             };
+        }
+
+        public async Task<ApiResponse<List<UserResponseDTO>>> GetAllRepresentativesAsync()
+        {
+            var users = await _userManager.GetUsersInRoleAsync("Representative");
+            var responseData = users.Select(u => new UserResponseDTO
+            {
+                Id = u.Id,
+                StoreName = u.StoreName,
+                PhoneNumber = u.PhoneNumber,
+                Location = u.Location,
+                IsActive = u.IsActive
+            }).ToList();
+
+            return new ApiResponse<List<UserResponseDTO>>(200, responseData);
         }
     }
 }

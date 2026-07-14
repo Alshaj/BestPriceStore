@@ -8,5 +8,6 @@ namespace BestPriceStore.DTOs.AuthDTOs
         public string Location { get; set; }
         public string Token { get; set; }
         public bool IsActive { get; set; }
+        public string Role { get; set; }
     }
 }

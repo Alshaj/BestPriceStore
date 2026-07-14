@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BestPriceStore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7f64b57cd915a62c64be0c240d6759141c4e3469")]
 [assembly: System.Reflection.AssemblyProductAttribute("BestPriceStore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BestPriceStore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
