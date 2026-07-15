@@ -117,5 +117,29 @@ namespace BestPriceStore.Services.ImageService
             // Construct and return the public URL
             return $"{publicUrl.TrimEnd('/')}/{uniqueFileName}";
         }
+
+        public async Task DeleteImageAsync(string imageUrl)
+        {
+            if (string.IsNullOrWhiteSpace(imageUrl))
+                return;
+
+            var bucketName = _configuration["R2:BucketName"];
+            var publicUrl = _configuration["R2:PublicUrl"];
+
+            // Check if the image belongs to our R2 storage to avoid deleting external URLs
+            if (!string.IsNullOrWhiteSpace(publicUrl) && imageUrl.StartsWith(publicUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                var key = imageUrl.Split('/').Last();
+                if (!string.IsNullOrWhiteSpace(key))
+                {
+                    var deleteRequest = new DeleteObjectRequest
+                    {
+                        BucketName = bucketName,
+                        Key = key
+                    };
+                    await _s3Client.DeleteObjectAsync(deleteRequest);
+                }
+            }
+        }
     }
 }

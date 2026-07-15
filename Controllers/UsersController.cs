@@ -45,6 +45,7 @@ namespace BestPriceStore.Controllers
         }
 
         [HttpPatch("profile")]
+        [Authorize(Roles = "Admin")] // Only Admin can update his profile
         public async Task<IActionResult> UpdateProfile(UpdateProfileRequestDTO updateProfileRequestDTO)
         {
             var userIdString = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);

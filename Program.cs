@@ -48,6 +48,8 @@ builder.Services.AddScoped<BestPriceStore.Services.AuthService.IAuthService, Bes
 builder.Services.AddScoped<BestPriceStore.Services.UserService.IUserService, BestPriceStore.Services.UserService.UserService>();
 builder.Services.AddScoped<BestPriceStore.Services.CategoryService.ICategoryService, BestPriceStore.Services.CategoryService.CategoryService>();
 builder.Services.AddScoped<BestPriceStore.Services.ImageService.IImageService, BestPriceStore.Services.ImageService.R2ImageService>();
+builder.Services.AddScoped<BestPriceStore.Services.ProductService.IProductService, BestPriceStore.Services.ProductService.ProductService>();
+builder.Services.AddScoped<BestPriceStore.Services.CurrencyService.ICurrencyService, BestPriceStore.Services.CurrencyService.CurrencyService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

@@ -4,6 +4,8 @@ C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\obj\Release\net8.
 C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\obj\Release\net8.0\PubTmp\Out\BestPriceStore.deps.json
 C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\obj\Release\net8.0\PubTmp\Out\BestPriceStore.runtimeconfig.json
 C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\obj\Release\net8.0\PubTmp\Out\BestPriceStore.pdb
+C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\obj\Release\net8.0\PubTmp\Out\AWSSDK.Core.dll
+C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\obj\Release\net8.0\PubTmp\Out\AWSSDK.S3.dll
 C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\obj\Release\net8.0\PubTmp\Out\Azure.Core.dll
 C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\obj\Release\net8.0\PubTmp\Out\Azure.Identity.dll
 C:\Users\abdurahman\source\repos\BestPriceStore\BestPriceStore\obj\Release\net8.0\PubTmp\Out\Humanizer.dll
