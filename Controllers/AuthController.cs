@@ -70,5 +70,6 @@ namespace BestPriceStore.Controllers
             }
             return Ok(response);
         }
+
     }
 }

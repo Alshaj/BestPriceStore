@@ -1,6 +1,6 @@
 namespace BestPriceStore.Enums
 {
-    public enum OrderStatus
+    public enum OrderStatusEnum
     {
         Pending = 1,
         Processing = 2,

@@ -12,8 +12,10 @@ namespace BestPriceStore.Models
         public int UserId { get; set; }
         public ApplicationUser? User { get; set; }
 
-        public OrderStatus OrderStatusId { get; set; }
-        public double TotalAmount { get; set; }
+        public int OrderStatusId { get; set; }
+        public OrderStatus? OrderStatus { get; set; }
+        public double TotalAmountYer { get; set; }
+        public double TotalAmountSar { get; set; }
         
         public DateTime CreatedAt { get; set; }
         public DateTime? CancelledAt { get; set; }

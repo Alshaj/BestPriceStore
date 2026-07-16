@@ -17,6 +17,7 @@ namespace BestPriceStore.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductImage> ProductImages { get; set; }
         public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderStatus> OrderStatuses { get; set; }
         public DbSet<OrderProduct> OrderProducts { get; set; }
         public DbSet<Cart> Carts { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
@@ -42,6 +43,12 @@ namespace BestPriceStore.Data
                 .HasOne(op => op.Product)
                 .WithMany()
                 .HasForeignKey(op => op.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<OrderProduct>()
+                .HasOne(op => op.Currency)
+                .WithMany()
+                .HasForeignKey(op => op.CurrencyId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<CartItem>()
@@ -80,6 +87,12 @@ namespace BestPriceStore.Data
                 .HasForeignKey(o => o.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<Order>()
+                .HasOne(o => o.OrderStatus)
+                .WithMany()
+                .HasForeignKey(o => o.OrderStatusId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.Entity<Cart>()
                 .HasOne(c => c.User)
                 .WithOne(u => u.Cart)
@@ -96,6 +109,15 @@ namespace BestPriceStore.Data
             builder.Entity<Currency>().HasData(
                 new Currency { Id = 1, Name = "ريال يمني", CreatedAt = DateTime.UtcNow },
                 new Currency { Id = 2, Name = "ريال سعودي", CreatedAt = DateTime.UtcNow }
+            );
+
+            // Seed OrderStatuses
+            builder.Entity<OrderStatus>().HasData(
+                new OrderStatus { Id = 1, Name = "Pending" },
+                new OrderStatus { Id = 2, Name = "Processing" },
+                new OrderStatus { Id = 3, Name = "Shipped" },
+                new OrderStatus { Id = 4, Name = "Delivered" },
+                new OrderStatus { Id = 5, Name = "Cancelled" }
             );
         }
     }
