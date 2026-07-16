@@ -8,6 +8,7 @@ namespace BestPriceStore.Services.ProductService
     {
         Task<ApiResponse<ProductResponseDTO>> CreateProductAsync(CreateProductRequestDTO model);
         Task<ApiResponse<List<ProductResponseDTO>>> GetAllProductsAsync(string? search, int? categoryId);
+        Task<ApiResponse<PaginatedList<ProductBrowseResponseDTO>>> GetBrowseProductsAsync(string? search, int? categoryId, int pageNumber, int pageSize);
         Task<ApiResponse<ProductResponseDTO>> GetProductByIdAsync(int id);
         Task<ApiResponse<ProductResponseDTO>> UpdateProductAsync(int id, UpdateProductRequestDTO model);
         Task<ApiResponse<ConfirmationResponseDTO>> ActivateProductAsync(int id);

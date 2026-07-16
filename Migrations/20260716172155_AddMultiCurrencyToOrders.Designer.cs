@@ -4,6 +4,7 @@ using BestPriceStore.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BestPriceStore.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260716172155_AddMultiCurrencyToOrders")]
+    partial class AddMultiCurrencyToOrders
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -227,13 +230,13 @@ namespace BestPriceStore.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 7, 16, 17, 41, 10, 997, DateTimeKind.Utc).AddTicks(5534),
+                            CreatedAt = new DateTime(2026, 7, 16, 17, 21, 54, 685, DateTimeKind.Utc).AddTicks(9919),
                             Name = "ريال يمني"
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 7, 16, 17, 41, 10, 997, DateTimeKind.Utc).AddTicks(5540),
+                            CreatedAt = new DateTime(2026, 7, 16, 17, 21, 54, 685, DateTimeKind.Utc).AddTicks(9923),
                             Name = "ريال سعودي"
                         });
                 });
@@ -265,8 +268,6 @@ namespace BestPriceStore.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("OrderStatusId");
 
                     b.HasIndex("UserId");
 
@@ -313,49 +314,6 @@ namespace BestPriceStore.Migrations
                     b.HasIndex("ProductImageId");
 
                     b.ToTable("OrderProducts");
-                });
-
-            modelBuilder.Entity("BestPriceStore.Models.OrderStatus", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("OrderStatuses");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Pending"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Processing"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Shipped"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Name = "Delivered"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Name = "Cancelled"
-                        });
                 });
 
             modelBuilder.Entity("BestPriceStore.Models.Product", b =>
@@ -561,19 +519,11 @@ namespace BestPriceStore.Migrations
 
             modelBuilder.Entity("BestPriceStore.Models.Order", b =>
                 {
-                    b.HasOne("BestPriceStore.Models.OrderStatus", "OrderStatus")
-                        .WithMany()
-                        .HasForeignKey("OrderStatusId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("BestPriceStore.Data.ApplicationUser", "User")
                         .WithMany("Orders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("OrderStatus");
 
                     b.Navigation("User");
                 });

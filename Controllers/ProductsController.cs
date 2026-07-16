@@ -1,3 +1,4 @@
+using BestPriceStore.DTOs;
 using BestPriceStore.DTOs.ProductDTOs;
 using BestPriceStore.Services.ProductService;
 using Microsoft.AspNetCore.Authorization;
@@ -38,6 +39,24 @@ namespace BestPriceStore.Controllers
         public async Task<IActionResult> GetAll([FromQuery] string? search, [FromQuery] int? categoryId)
         {
             var response = await _productService.GetAllProductsAsync(search, categoryId);
+            if (response.StatusCode != 200)
+            {
+                return StatusCode((int)response.StatusCode, response);
+            }
+            return Ok(response);
+        }
+
+        [HttpGet("browse")]
+        public async Task<IActionResult> GetBrowseProducts(
+            [FromQuery] string? search, 
+            [FromQuery] int? categoryId, 
+            [FromQuery] int pageNumber = 1, 
+            [FromQuery] int pageSize = 10)
+        {
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+
+            var response = await _productService.GetBrowseProductsAsync(search, categoryId, pageNumber, pageSize);
             if (response.StatusCode != 200)
             {
                 return StatusCode((int)response.StatusCode, response);

@@ -179,6 +179,54 @@ namespace BestPriceStore.Services.ProductService
             }
         }
 
+        public async Task<ApiResponse<PaginatedList<ProductBrowseResponseDTO>>> GetBrowseProductsAsync(string? search, int? categoryId, int pageNumber, int pageSize)
+        {
+            try
+            {
+                var query = _context.Products
+                    .Where(p => p.IsActive)
+                    .AsQueryable();
+
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    var cleanSearch = search.Trim();
+                    query = query.Where(p => (p.Name != null && p.Name.Contains(cleanSearch)) || 
+                                             (p.Description != null && p.Description.Contains(cleanSearch)));
+                }
+
+                if (categoryId.HasValue)
+                {
+                    query = query.Where(p => p.CategoryId == categoryId.Value);
+                }
+
+                var totalCount = await query.CountAsync();
+
+                var items = await query
+                    .OrderByDescending(p => p.Id)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(p => new ProductBrowseResponseDTO
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Price = p.Price,
+                        CurrencyId = p.CurrencyId,
+                        PrimaryImageUrl = p.ProductImages
+                            .OrderByDescending(pi => pi.IsPrimary)
+                            .Select(pi => pi.ImageUrl)
+                            .FirstOrDefault()
+                    })
+                    .ToListAsync();
+
+                var paginatedList = new PaginatedList<ProductBrowseResponseDTO>(items, totalCount, pageNumber, pageSize);
+                return new ApiResponse<PaginatedList<ProductBrowseResponseDTO>>(200, paginatedList);
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<PaginatedList<ProductBrowseResponseDTO>>(500, $"An error occurred while retrieving browse products: {ex.Message}");
+            }
+        }
+
         public async Task<ApiResponse<ProductResponseDTO>> GetProductByIdAsync(int id)
         {
             try
