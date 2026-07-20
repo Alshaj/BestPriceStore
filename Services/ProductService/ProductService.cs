@@ -466,5 +466,87 @@ namespace BestPriceStore.Services.ProductService
                 return new ApiResponse<ConfirmationResponseDTO>(500, $"An error occurred while deactivating the product: {ex.Message}");
             }
         }
+
+        public async Task<ApiResponse<List<ProductBrowseResponseDTO>>> GetLatestProductsAsync()
+        {
+            try
+            {
+                var products = await _context.Products
+                    .Where(p => p.IsActive)
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Take(5)
+                    .Select(p => new ProductBrowseResponseDTO
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Price = p.Price,
+                        CurrencyId = p.CurrencyId,
+                        PrimaryImageUrl = p.ProductImages
+                            .OrderByDescending(pi => pi.IsPrimary)
+                            .Select(pi => pi.ImageUrl)
+                            .FirstOrDefault()
+                    })
+                    .ToListAsync();
+
+                return new ApiResponse<List<ProductBrowseResponseDTO>>(200, products);
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<List<ProductBrowseResponseDTO>>(500, $"An error occurred while fetching latest products: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<List<ProductBestSellerResponseDTO>>> GetTopSellingProductsAsync()
+        {
+            try
+            {
+                var topSelling = await _context.OrderProducts
+                    .Include(op => op.Order)
+                    .Where(op => op.Order != null && op.Order.OrderStatusId == 4) // Only delivered orders
+                    .GroupBy(op => op.ProductId)
+                    .Select(g => new
+                    {
+                        ProductId = g.Key,
+                        TotalSold = g.Sum(op => op.Quantity)
+                    })
+                    .OrderByDescending(x => x.TotalSold)
+                    .Take(10)
+                    .ToListAsync();
+
+                var productIds = topSelling.Select(x => x.ProductId).ToList();
+
+                var products = await _context.Products
+                    .Where(p => productIds.Contains(p.Id) && p.IsActive)
+                    .Include(p => p.ProductImages)
+                    .ToListAsync();
+
+                var result = topSelling
+                    .Select(ts => {
+                        var p = products.FirstOrDefault(prod => prod.Id == ts.ProductId);
+                        if (p == null) return null;
+
+                        return new ProductBestSellerResponseDTO
+                        {
+                            Id = p.Id,
+                            Name = p.Name,
+                            Price = p.Price,
+                            CurrencyId = p.CurrencyId,
+                            PrimaryImageUrl = p.ProductImages
+                                .OrderByDescending(pi => pi.IsPrimary)
+                                .Select(pi => pi.ImageUrl)
+                                .FirstOrDefault(),
+                            TotalQuantitySold = ts.TotalSold
+                        };
+                    })
+                    .Where(x => x != null)
+                    .ToList();
+
+                return new ApiResponse<List<ProductBestSellerResponseDTO>>(200, result!);
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<List<ProductBestSellerResponseDTO>>(500, $"An error occurred while fetching top selling products: {ex.Message}");
+            }
+        }
     }
 }

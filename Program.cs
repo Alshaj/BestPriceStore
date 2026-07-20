@@ -51,6 +51,7 @@ builder.Services.AddScoped<BestPriceStore.Services.ImageService.IImageService, B
 builder.Services.AddScoped<BestPriceStore.Services.ProductService.IProductService, BestPriceStore.Services.ProductService.ProductService>();
 builder.Services.AddScoped<BestPriceStore.Services.CurrencyService.ICurrencyService, BestPriceStore.Services.CurrencyService.CurrencyService>();
 builder.Services.AddScoped<BestPriceStore.Services.OrderService.IOrderService, BestPriceStore.Services.OrderService.OrderService>();
+builder.Services.AddScoped<BestPriceStore.Services.AdminDashboardService.IAdminDashboardService, BestPriceStore.Services.AdminDashboardService.AdminDashboardService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

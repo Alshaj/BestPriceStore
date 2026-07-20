@@ -14,5 +14,6 @@ namespace BestPriceStore.Services.OrderService
         Task<ApiResponse<List<AdminOrderSummaryResponseDTO>>> GetAllOrdersAsync();
         Task<ApiResponse<OrderResponseDTO>> GetOrderDetailsForAdminAsync(int orderId);
         Task<ApiResponse<OrderResponseDTO>> UpdateOrderStatusAsync(int orderId, UpdateOrderStatusRequestDTO model);
+        Task<ApiResponse<OrderResponseDTO>> EditOrderItemsAsync(int orderId, EditOrderItemsRequestDTO model);
     }
 }

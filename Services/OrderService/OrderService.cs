@@ -361,6 +361,124 @@ namespace BestPriceStore.Services.OrderService
             };
         }
 
+        public async Task<ApiResponse<OrderResponseDTO>> EditOrderItemsAsync(int orderId, EditOrderItemsRequestDTO model)
+        {
+            var order = await _context.Orders
+                .Include(o => o.OrderProducts)
+                    .ThenInclude(op => op.Product)
+                .Include(o => o.OrderProducts)
+                    .ThenInclude(op => op.ProductImage)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null)
+            {
+                return new ApiResponse<OrderResponseDTO>(404, "Order not found.");
+            }
+
+            if (order.OrderStatusId == 5) // Cancelled
+            {
+                return new ApiResponse<OrderResponseDTO>(400, "Cannot edit items of a cancelled order.");
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var requestItems = model.Items.ToDictionary(i => i.ProductImageId, i => i.Quantity);
+
+                // Process existing items in the order
+                var orderProductsCopy = order.OrderProducts.ToList();
+                foreach (var orderProduct in orderProductsCopy)
+                {
+                    var variation = orderProduct.ProductImage;
+                    if (variation == null) continue;
+
+                    if (!requestItems.ContainsKey(orderProduct.ProductImageId) || requestItems[orderProduct.ProductImageId] == 0)
+                    {
+                        // Item was removed/returned entirely
+                        variation.QuantityInStock += orderProduct.Quantity;
+                        _context.ProductImages.Update(variation);
+                        _context.OrderProducts.Remove(orderProduct);
+                    }
+                    else
+                    {
+                        int newQty = requestItems[orderProduct.ProductImageId];
+                        int diff = orderProduct.Quantity - newQty;
+
+                        if (diff < 0) // Quantity increased
+                        {
+                            await transaction.RollbackAsync();
+                            return new ApiResponse<OrderResponseDTO>(400, 
+                                $"Increasing product quantity is not allowed. Representative must place a new order for additional quantities of variation ID {variation.Id}.");
+                        }
+
+                        // Restore stock difference
+                        variation.QuantityInStock += diff;
+                        _context.ProductImages.Update(variation);
+
+                        orderProduct.Quantity = newQty;
+                        orderProduct.TotalAmount = orderProduct.UnitPrice * newQty;
+                        _context.OrderProducts.Update(orderProduct);
+                    }
+                }
+
+                // Save changes to db first to refresh tracking states
+                await _context.SaveChangesAsync();
+
+                // Reload order to recalculate totals based on remaining items
+                var remainingProducts = await _context.OrderProducts
+                    .Where(op => op.OrderId == orderId)
+                    .ToListAsync();
+
+                if (remainingProducts.Count == 0)
+                {
+                    // All items were returned -> Delete the order entirely
+                    _context.Orders.Remove(order);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return new ApiResponse<OrderResponseDTO> { StatusCode = 200, Success = true, Data = null! };
+                }
+
+                double totalAmountYer = 0.0;
+                double totalAmountSar = 0.0;
+
+                foreach (var rp in remainingProducts)
+                {
+                    if (rp.CurrencyId == 1) // YER
+                    {
+                        totalAmountYer += rp.TotalAmount;
+                    }
+                    else if (rp.CurrencyId == 2) // SAR
+                    {
+                        totalAmountSar += rp.TotalAmount;
+                    }
+                }
+
+                order.TotalAmountYer = totalAmountYer;
+                order.TotalAmountSar = totalAmountSar;
+
+                _context.Orders.Update(order);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                // Map to return response
+                var updatedOrder = await _context.Orders
+                    .Include(o => o.OrderProducts)
+                        .ThenInclude(op => op.Product)
+                    .Include(o => o.OrderProducts)
+                        .ThenInclude(op => op.ProductImage)
+                    .FirstOrDefaultAsync(o => o.Id == orderId);
+
+                return new ApiResponse<OrderResponseDTO>(200, MapToOrderResponseDTO(updatedOrder!));
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return new ApiResponse<OrderResponseDTO>(500, $"An error occurred while editing the order: {ex.Message}");
+            }
+        }
+
         private OrderResponseDTO MapToOrderResponseDTO(Order order)
         {
             return new OrderResponseDTO

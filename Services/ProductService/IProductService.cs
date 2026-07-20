@@ -1,5 +1,6 @@
 using BestPriceStore.DTOs;
 using BestPriceStore.DTOs.ProductDTOs;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace BestPriceStore.Services.ProductService
@@ -13,5 +14,7 @@ namespace BestPriceStore.Services.ProductService
         Task<ApiResponse<ProductResponseDTO>> UpdateProductAsync(int id, UpdateProductRequestDTO model);
         Task<ApiResponse<ConfirmationResponseDTO>> ActivateProductAsync(int id);
         Task<ApiResponse<ConfirmationResponseDTO>> DeactivateProductAsync(int id);
+        Task<ApiResponse<List<ProductBrowseResponseDTO>>> GetLatestProductsAsync();
+        Task<ApiResponse<List<ProductBestSellerResponseDTO>>> GetTopSellingProductsAsync();
     }
 }
