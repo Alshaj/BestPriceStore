@@ -115,5 +115,27 @@ namespace BestPriceStore.Controllers
             }
             return Ok(response);
         }
+
+        [HttpGet("latest")]
+        public async Task<IActionResult> GetLatestProducts()
+        {
+            var response = await _productService.GetLatestProductsAsync();
+            if (response.StatusCode != 200)
+            {
+                return StatusCode((int)response.StatusCode, response);
+            }
+            return Ok(response);
+        }
+
+        [HttpGet("top-selling")]
+        public async Task<IActionResult> GetTopSellingProducts()
+        {
+            var response = await _productService.GetTopSellingProductsAsync();
+            if (response.StatusCode != 200)
+            {
+                return StatusCode((int)response.StatusCode, response);
+            }
+            return Ok(response);
+        }
     }
 }

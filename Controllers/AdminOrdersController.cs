@@ -67,5 +67,25 @@ namespace BestPriceStore.Controllers
             }
             return Ok(response);
         }
+
+        /// <summary>
+        /// Edits quantities/items of an order for returns or adjustments (reductions only).
+        /// </summary>
+        [HttpPut("{id}/items")]
+        public async Task<IActionResult> EditOrderItems(int id, [FromBody] EditOrderItemsRequestDTO model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var response = await _orderService.EditOrderItemsAsync(id, model);
+            if (response.StatusCode != 200)
+            {
+                return StatusCode((int)response.StatusCode, response);
+            }
+            
+            return Ok(response);
+        }
     }
 }
