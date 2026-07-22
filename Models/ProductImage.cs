@@ -12,6 +12,7 @@ namespace BestPriceStore.Models
         public string? ImageUrl { get; set; }
         public int QuantityInStock { get; set; }
         public bool IsPrimary { get; set; }
+        public bool IsDeleted { get; set; }
 
         public ICollection<OrderProduct> OrderProducts { get; set; } = new List<OrderProduct>();
         public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();

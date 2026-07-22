@@ -126,10 +126,22 @@ namespace BestPriceStore.Services.UserService
             };
         }
 
-        public async Task<ApiResponse<List<UserResponseDTO>>> GetAllRepresentativesAsync()
+        public async Task<ApiResponse<List<UserResponseDTO>>> GetAllRepresentativesAsync(string? search)
         {
             var users = await _userManager.GetUsersInRoleAsync("Representative");
-            var responseData = users.Select(u => new UserResponseDTO
+            var usersQuery = users.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var cleanSearch = search.Trim();
+                usersQuery = usersQuery.Where(u => 
+                    (u.StoreName != null && u.StoreName.Contains(cleanSearch, System.StringComparison.OrdinalIgnoreCase)) ||
+                    (u.Location != null && u.Location.Contains(cleanSearch, System.StringComparison.OrdinalIgnoreCase)) ||
+                    (u.PhoneNumber != null && u.PhoneNumber.Contains(cleanSearch, System.StringComparison.OrdinalIgnoreCase))
+                );
+            }
+
+            var responseData = usersQuery.Select(u => new UserResponseDTO
             {
                 Id = u.Id,
                 StoreName = u.StoreName,

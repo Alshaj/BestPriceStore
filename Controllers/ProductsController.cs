@@ -38,7 +38,8 @@ namespace BestPriceStore.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] string? search, [FromQuery] int? categoryId)
         {
-            var response = await _productService.GetAllProductsAsync(search, categoryId);
+            bool isAdmin = User.Identity?.IsAuthenticated == true && User.IsInRole("Admin");
+            var response = await _productService.GetAllProductsAsync(search, categoryId, isAdmin);
             if (response.StatusCode != 200)
             {
                 return StatusCode((int)response.StatusCode, response);
@@ -56,7 +57,8 @@ namespace BestPriceStore.Controllers
             if (pageNumber < 1) pageNumber = 1;
             if (pageSize < 1) pageSize = 10;
 
-            var response = await _productService.GetBrowseProductsAsync(search, categoryId, pageNumber, pageSize);
+            bool isAdmin = User.Identity?.IsAuthenticated == true && User.IsInRole("Admin");
+            var response = await _productService.GetBrowseProductsAsync(search, categoryId, pageNumber, pageSize, isAdmin);
             if (response.StatusCode != 200)
             {
                 return StatusCode((int)response.StatusCode, response);
@@ -67,7 +69,8 @@ namespace BestPriceStore.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var response = await _productService.GetProductByIdAsync(id);
+            bool isAdmin = User.Identity?.IsAuthenticated == true && User.IsInRole("Admin");
+            var response = await _productService.GetProductByIdAsync(id, isAdmin);
             if (response.StatusCode != 200)
             {
                 return StatusCode((int)response.StatusCode, response);
@@ -119,7 +122,8 @@ namespace BestPriceStore.Controllers
         [HttpGet("latest")]
         public async Task<IActionResult> GetLatestProducts()
         {
-            var response = await _productService.GetLatestProductsAsync();
+            bool isAdmin = User.Identity?.IsAuthenticated == true && User.IsInRole("Admin");
+            var response = await _productService.GetLatestProductsAsync(isAdmin);
             if (response.StatusCode != 200)
             {
                 return StatusCode((int)response.StatusCode, response);
@@ -130,7 +134,20 @@ namespace BestPriceStore.Controllers
         [HttpGet("top-selling")]
         public async Task<IActionResult> GetTopSellingProducts()
         {
-            var response = await _productService.GetTopSellingProductsAsync();
+            bool isAdmin = User.Identity?.IsAuthenticated == true && User.IsInRole("Admin");
+            var response = await _productService.GetTopSellingProductsAsync(isAdmin);
+            if (response.StatusCode != 200)
+            {
+                return StatusCode((int)response.StatusCode, response);
+            }
+            return Ok(response);
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var response = await _productService.SoftDeleteProductAsync(id);
             if (response.StatusCode != 200)
             {
                 return StatusCode((int)response.StatusCode, response);

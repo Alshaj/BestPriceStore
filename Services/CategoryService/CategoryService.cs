@@ -18,17 +18,25 @@ namespace BestPriceStore.Services.CategoryService
             _context = context;
         }
 
-        public async Task<ApiResponse<List<CategoryResponseDTO>>> GetAllCategoriesAsync()
+        public async Task<ApiResponse<List<CategoryResponseDTO>>> GetAllCategoriesAsync(string? search)
         {
             try
             {
-                var categories = await _context.Categories
-                .Select(c => new CategoryResponseDTO
+                var query = _context.Categories.AsQueryable();
+
+                if (!string.IsNullOrWhiteSpace(search))
                 {
-                    Id = c.Id,
-                    Name = c.Name
-                })
-                .ToListAsync();
+                    var cleanSearch = search.Trim();
+                    query = query.Where(c => c.Name != null && c.Name.Contains(cleanSearch));
+                }
+
+                var categories = await query
+                    .Select(c => new CategoryResponseDTO
+                    {
+                        Id = c.Id,
+                        Name = c.Name
+                    })
+                    .ToListAsync();
 
                 return new ApiResponse<List<CategoryResponseDTO>>(200, categories);
             }
@@ -61,6 +69,8 @@ namespace BestPriceStore.Services.CategoryService
 
             try
             {
+                
+
                 var category = new Category
                 {
                     Name = model.Name

@@ -1,6 +1,7 @@
 using BestPriceStore.Data;
 using BestPriceStore.DTOs;
 using BestPriceStore.DTOs.ProductDTOs;
+using BestPriceStore.Helpers;
 using BestPriceStore.Models;
 using BestPriceStore.Services.ImageService;
 using Microsoft.EntityFrameworkCore;
@@ -42,7 +43,7 @@ namespace BestPriceStore.Services.ProductService
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var utcNow = DateTime.UtcNow;
+                var yemenNow = DateTimeHelper.GetYemeniTime();
 
                 var product = new Product
                 {
@@ -51,8 +52,8 @@ namespace BestPriceStore.Services.ProductService
                     Price = model.Price,
                     CurrencyId = model.CurrencyId,
                     CategoryId = model.CategoryId,
-                    CreatedAt = utcNow,
-                    UpdatedAt = utcNow,
+                    CreatedAt = yemenNow,
+                    UpdatedAt = yemenNow,
                     IsActive = true
                 };
 
@@ -125,15 +126,21 @@ namespace BestPriceStore.Services.ProductService
             }
         }
 
-        public async Task<ApiResponse<List<ProductResponseDTO>>> GetAllProductsAsync(string? search, int? categoryId)
+        public async Task<ApiResponse<List<ProductResponseDTO>>> GetAllProductsAsync(string? search, int? categoryId, bool isAdmin)
         {
             try
             {
                 var query = _context.Products
+                    .Where(p => !p.IsDeleted)
                     .Include(p => p.Category)
                     .Include(p => p.Currency)
                     .Include(p => p.ProductImages)
                     .AsQueryable();
+
+                if (!isAdmin)
+                {
+                    query = query.Where(p => p.IsActive);
+                }
 
                 if (!string.IsNullOrWhiteSpace(search))
                 {
@@ -161,7 +168,7 @@ namespace BestPriceStore.Services.ProductService
                         CreatedAt = p.CreatedAt,
                         UpdatedAt = p.UpdatedAt,
                         IsActive = p.IsActive,
-                        Images = p.ProductImages.Select(pi => new ProductImageResponseDTO
+                        Images = p.ProductImages.Where(pi => !pi.IsDeleted).Select(pi => new ProductImageResponseDTO
                         {
                             Id = pi.Id,
                             ImageUrl = pi.ImageUrl,
@@ -179,13 +186,18 @@ namespace BestPriceStore.Services.ProductService
             }
         }
 
-        public async Task<ApiResponse<PaginatedList<ProductBrowseResponseDTO>>> GetBrowseProductsAsync(string? search, int? categoryId, int pageNumber, int pageSize)
+        public async Task<ApiResponse<PaginatedList<ProductBrowseResponseDTO>>> GetBrowseProductsAsync(string? search, int? categoryId, int pageNumber, int pageSize, bool isAdmin)
         {
             try
             {
                 var query = _context.Products
-                    .Where(p => p.IsActive)
+                    .Where(p => !p.IsDeleted)
                     .AsQueryable();
+
+                if (!isAdmin)
+                {
+                    query = query.Where(p => p.IsActive);
+                }
 
                 if (!string.IsNullOrWhiteSpace(search))
                 {
@@ -212,6 +224,7 @@ namespace BestPriceStore.Services.ProductService
                         Price = p.Price,
                         CurrencyId = p.CurrencyId,
                         PrimaryImageUrl = p.ProductImages
+                            .Where(pi => !pi.IsDeleted)
                             .OrderByDescending(pi => pi.IsPrimary)
                             .Select(pi => pi.ImageUrl)
                             .FirstOrDefault()
@@ -227,7 +240,7 @@ namespace BestPriceStore.Services.ProductService
             }
         }
 
-        public async Task<ApiResponse<ProductResponseDTO>> GetProductByIdAsync(int id)
+        public async Task<ApiResponse<ProductResponseDTO>> GetProductByIdAsync(int id, bool isAdmin)
         {
             try
             {
@@ -235,9 +248,9 @@ namespace BestPriceStore.Services.ProductService
                     .Include(p => p.Category)
                     .Include(p => p.Currency)
                     .Include(p => p.ProductImages)
-                    .FirstOrDefaultAsync(p => p.Id == id);
+                    .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
 
-                if (product == null)
+                if (product == null || (!product.IsActive && !isAdmin))
                 {
                     return new ApiResponse<ProductResponseDTO>(404, "Product not found.");
                 }
@@ -255,7 +268,7 @@ namespace BestPriceStore.Services.ProductService
                     CreatedAt = product.CreatedAt,
                     UpdatedAt = product.UpdatedAt,
                     IsActive = product.IsActive,
-                    Images = product.ProductImages.Select(pi => new ProductImageResponseDTO
+                    Images = product.ProductImages.Where(pi => !pi.IsDeleted).Select(pi => new ProductImageResponseDTO
                     {
                         Id = pi.Id,
                         ImageUrl = pi.ImageUrl,
@@ -305,7 +318,7 @@ namespace BestPriceStore.Services.ProductService
                 product.Price = model.Price;
                 product.CurrencyId = model.CurrencyId;
                 product.CategoryId = model.CategoryId;
-                product.UpdatedAt = DateTime.UtcNow;
+                product.UpdatedAt = DateTimeHelper.GetYemeniTime();
 
                 // 1. Identify deleted images (currently in DB, but not in update request Images list)
                 var requestImageIds = model.Images
@@ -319,12 +332,9 @@ namespace BestPriceStore.Services.ProductService
 
                 foreach (var deletedImg in deletedImages)
                 {
-                    // Clean up from Cloudflare R2
-                    if (!string.IsNullOrWhiteSpace(deletedImg.ImageUrl))
-                    {
-                        await _imageService.DeleteImageAsync(deletedImg.ImageUrl);
-                    }
-                    _context.ProductImages.Remove(deletedImg);
+                    deletedImg.IsDeleted = true;
+                    deletedImg.QuantityInStock = 0;
+                    _context.ProductImages.Update(deletedImg);
                 }
 
                 // 2. Process kept and new images
@@ -424,7 +434,7 @@ namespace BestPriceStore.Services.ProductService
                 }
 
                 product.IsActive = true;
-                product.UpdatedAt = DateTime.UtcNow;
+                product.UpdatedAt = DateTimeHelper.GetYemeniTime();
 
                 _context.Products.Update(product);
                 await _context.SaveChangesAsync();
@@ -451,7 +461,7 @@ namespace BestPriceStore.Services.ProductService
                 }
 
                 product.IsActive = false;
-                product.UpdatedAt = DateTime.UtcNow;
+                product.UpdatedAt = DateTimeHelper.GetYemeniTime();
 
                 _context.Products.Update(product);
                 await _context.SaveChangesAsync();
@@ -467,12 +477,19 @@ namespace BestPriceStore.Services.ProductService
             }
         }
 
-        public async Task<ApiResponse<List<ProductBrowseResponseDTO>>> GetLatestProductsAsync()
+        public async Task<ApiResponse<List<ProductBrowseResponseDTO>>> GetLatestProductsAsync(bool isAdmin)
         {
             try
             {
-                var products = await _context.Products
-                    .Where(p => p.IsActive)
+                var query = _context.Products
+                    .Where(p => !p.IsDeleted);
+
+                if (!isAdmin)
+                {
+                    query = query.Where(p => p.IsActive);
+                }
+
+                var products = await query
                     .OrderByDescending(p => p.CreatedAt)
                     .Take(5)
                     .Select(p => new ProductBrowseResponseDTO
@@ -482,6 +499,7 @@ namespace BestPriceStore.Services.ProductService
                         Price = p.Price,
                         CurrencyId = p.CurrencyId,
                         PrimaryImageUrl = p.ProductImages
+                            .Where(pi => !pi.IsDeleted)
                             .OrderByDescending(pi => pi.IsPrimary)
                             .Select(pi => pi.ImageUrl)
                             .FirstOrDefault()
@@ -496,7 +514,7 @@ namespace BestPriceStore.Services.ProductService
             }
         }
 
-        public async Task<ApiResponse<List<ProductBestSellerResponseDTO>>> GetTopSellingProductsAsync()
+        public async Task<ApiResponse<List<ProductBestSellerResponseDTO>>> GetTopSellingProductsAsync(bool isAdmin)
         {
             try
             {
@@ -515,8 +533,13 @@ namespace BestPriceStore.Services.ProductService
 
                 var productIds = topSelling.Select(x => x.ProductId).ToList();
 
-                var products = await _context.Products
-                    .Where(p => productIds.Contains(p.Id) && p.IsActive)
+                var query = _context.Products.Where(p => productIds.Contains(p.Id) && !p.IsDeleted);
+                if (!isAdmin)
+                {
+                    query = query.Where(p => p.IsActive);
+                }
+
+                var products = await query
                     .Include(p => p.ProductImages)
                     .ToListAsync();
 
@@ -532,6 +555,7 @@ namespace BestPriceStore.Services.ProductService
                             Price = p.Price,
                             CurrencyId = p.CurrencyId,
                             PrimaryImageUrl = p.ProductImages
+                                .Where(pi => !pi.IsDeleted)
                                 .OrderByDescending(pi => pi.IsPrimary)
                                 .Select(pi => pi.ImageUrl)
                                 .FirstOrDefault(),
@@ -546,6 +570,42 @@ namespace BestPriceStore.Services.ProductService
             catch (Exception ex)
             {
                 return new ApiResponse<List<ProductBestSellerResponseDTO>>(500, $"An error occurred while fetching top selling products: {ex.Message}");
+            }
+        }
+
+        public async Task<ApiResponse<ConfirmationResponseDTO>> SoftDeleteProductAsync(int id)
+        {
+            try
+            {
+                var product = await _context.Products
+                    .Include(p => p.ProductImages)
+                    .FirstOrDefaultAsync(p => p.Id == id);
+
+                if (product == null)
+                {
+                    return new ApiResponse<ConfirmationResponseDTO>(404, "Product not found.");
+                }
+
+                product.IsDeleted = true;
+                product.UpdatedAt = DateTimeHelper.GetYemeniTime();
+
+                foreach (var img in product.ProductImages)
+                {
+                    img.IsDeleted = true;
+                    img.QuantityInStock = 0;
+                }
+
+                _context.Products.Update(product);
+                await _context.SaveChangesAsync();
+
+                return new ApiResponse<ConfirmationResponseDTO>(200, new ConfirmationResponseDTO
+                {
+                    Message = "Product and its images have been successfully deleted softly."
+                });
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<ConfirmationResponseDTO>(500, $"An error occurred while deleting the product: {ex.Message}");
             }
         }
     }
