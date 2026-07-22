@@ -34,7 +34,8 @@ namespace BestPriceStore.Controllers
                 return BadRequest(ModelState);
             }
 
-            var response = await _orderService.PlaceOrderAsync(userId, model);
+            bool isAdmin = User.Identity?.IsAuthenticated == true && User.IsInRole("Admin");
+            var response = await _orderService.PlaceOrderAsync(userId, model, isAdmin);
             if (response.StatusCode != 201)
             {
                 return StatusCode((int)response.StatusCode, response);
@@ -43,7 +44,7 @@ namespace BestPriceStore.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetMyOrders()
+        public async Task<IActionResult> GetMyOrders([FromQuery] int? orderStatusId)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
@@ -51,7 +52,7 @@ namespace BestPriceStore.Controllers
                 return Unauthorized(new ApiResponse<object>(401, "User is not properly authenticated."));
             }
 
-            var response = await _orderService.GetUserOrdersAsync(userId);
+            var response = await _orderService.GetUserOrdersAsync(userId, orderStatusId);
             return Ok(response);
         }
 

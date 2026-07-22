@@ -21,9 +21,9 @@ namespace BestPriceStore.Controllers
 
         [HttpGet]
         // Accessible to anyone (not restricted to admin)
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] string? search)
         {
-            var response = await _categoryService.GetAllCategoriesAsync();
+            var response = await _categoryService.GetAllCategoriesAsync(search);
             if (response.StatusCode != 200)
             {
                 return StatusCode((int)response.StatusCode, response);

@@ -227,13 +227,13 @@ namespace BestPriceStore.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 7, 16, 17, 41, 10, 997, DateTimeKind.Utc).AddTicks(5534),
+                            CreatedAt = new DateTime(2026, 7, 22, 18, 1, 49, 641, DateTimeKind.Unspecified).AddTicks(67),
                             Name = "ريال يمني"
                         },
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 7, 16, 17, 41, 10, 997, DateTimeKind.Utc).AddTicks(5540),
+                            CreatedAt = new DateTime(2026, 7, 22, 18, 1, 49, 641, DateTimeKind.Unspecified).AddTicks(67),
                             Name = "ريال سعودي"
                         });
                 });
@@ -381,6 +381,9 @@ namespace BestPriceStore.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
@@ -409,6 +412,9 @@ namespace BestPriceStore.Migrations
 
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsPrimary")
                         .HasColumnType("bit");

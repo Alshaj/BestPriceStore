@@ -74,6 +74,18 @@ Creates a new category.
 }
 ```
 
+**Bad Request - Name Already Exists (400 Bad Request):**
+```json
+{
+  "statusCode": 400,
+  "success": false,
+  "errors": [
+    "Category with name 'Home Appliances' already exists."
+  ],
+  "data": null
+}
+```
+
 ---
 
 ## 3. Update Category

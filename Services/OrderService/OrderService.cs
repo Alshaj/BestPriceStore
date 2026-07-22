@@ -1,6 +1,7 @@
 using BestPriceStore.Data;
 using BestPriceStore.DTOs;
 using BestPriceStore.DTOs.OrderDTOs;
+using BestPriceStore.Helpers;
 using BestPriceStore.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -19,7 +20,7 @@ namespace BestPriceStore.Services.OrderService
             _context = context;
         }
 
-        public async Task<ApiResponse<OrderResponseDTO>> PlaceOrderAsync(int userId, CreateOrderRequestDTO model)
+        public async Task<ApiResponse<OrderResponseDTO>> PlaceOrderAsync(int userId, CreateOrderRequestDTO model, bool isAdmin)
         {
             // Verify User exists
             var userExists = await _context.Users.AnyAsync(u => u.Id == userId);
@@ -53,6 +54,13 @@ namespace BestPriceStore.Services.OrderService
                     {
                         await transaction.RollbackAsync();
                         return new ApiResponse<OrderResponseDTO>(400, $"Product associated with Image ID {item.ProductImageId} does not exist.");
+                    }
+
+                    // Check if product is active
+                    if (!productImage.Product.IsActive && !isAdmin)
+                    {
+                        await transaction.RollbackAsync();
+                        return new ApiResponse<OrderResponseDTO>(400, $"Product '{productImage.Product.Name}' is not active and cannot be ordered.");
                     }
 
                     // Check stock
@@ -115,7 +123,7 @@ namespace BestPriceStore.Services.OrderService
                     OrderStatusId = 1, // Pending status (Seeded lookup ID)
                     TotalAmountYer = totalAmountYer,
                     TotalAmountSar = totalAmountSar,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTimeHelper.GetYemeniTime(),
                     OrderProducts = orderProducts
                 };
 
@@ -145,10 +153,16 @@ namespace BestPriceStore.Services.OrderService
             }
         }
 
-        public async Task<ApiResponse<List<OrderSummaryResponseDTO>>> GetUserOrdersAsync(int userId)
+        public async Task<ApiResponse<List<OrderSummaryResponseDTO>>> GetUserOrdersAsync(int userId, int? orderStatusId)
         {
-            var orders = await _context.Orders
-                .Where(o => o.UserId == userId)
+            var query = _context.Orders.Where(o => o.UserId == userId);
+
+            if (orderStatusId.HasValue)
+            {
+                query = query.Where(o => o.OrderStatusId == orderStatusId.Value);
+            }
+
+            var orders = await query
                 .OrderByDescending(o => o.CreatedAt)
                 .Select(o => new OrderSummaryResponseDTO
                 {
@@ -166,6 +180,7 @@ namespace BestPriceStore.Services.OrderService
         public async Task<ApiResponse<OrderResponseDTO>> GetOrderDetailsAsync(int userId, int orderId)
         {
             var order = await _context.Orders
+                .IgnoreQueryFilters()
                 .Include(o => o.OrderProducts)
                     .ThenInclude(op => op.Product)
                 .Include(o => o.OrderProducts)
@@ -189,6 +204,7 @@ namespace BestPriceStore.Services.OrderService
         public async Task<ApiResponse<OrderResponseDTO>> CancelOrderAsync(int userId, int orderId)
         {
             var order = await _context.Orders
+                .IgnoreQueryFilters()
                 .Include(o => o.OrderProducts)
                     .ThenInclude(op => op.Product)
                 .Include(o => o.OrderProducts)
@@ -214,14 +230,44 @@ namespace BestPriceStore.Services.OrderService
 
             // Update status to Cancelled (5)
             order.OrderStatusId = 5;
-            order.CancelledAt = DateTime.UtcNow;
+            order.CancelledAt = DateTimeHelper.GetYemeniTime();
 
             // Restore stock for each item
             foreach (var item in order.OrderProducts)
             {
-                if (item.ProductImage != null)
+                var variation = await _context.ProductImages
+                    .IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(pi => pi.Id == item.ProductImageId);
+
+                if (variation != null)
                 {
-                    item.ProductImage.QuantityInStock += item.Quantity;
+                    var product = await _context.Products
+                        .IgnoreQueryFilters()
+                        .FirstOrDefaultAsync(p => p.Id == variation.ProductId);
+
+                    if (product != null)
+                    {
+                        if (!product.IsDeleted)
+                        {
+                            if (variation.IsDeleted)
+                            {
+                                variation.IsDeleted = false;
+                            }
+                        }
+                        else // product is deleted
+                        {
+                            product.IsDeleted = false;
+                            _context.Products.Update(product);
+
+                            if (variation.IsDeleted)
+                            {
+                                variation.IsDeleted = false;
+                            }
+                        }
+                    }
+
+                    variation.QuantityInStock += item.Quantity;
+                    _context.ProductImages.Update(variation);
                 }
             }
 
@@ -230,29 +276,58 @@ namespace BestPriceStore.Services.OrderService
             return new ApiResponse<OrderResponseDTO>(200, MapToOrderResponseDTO(order));
         }
 
-        public async Task<ApiResponse<List<AdminOrderSummaryResponseDTO>>> GetAllOrdersAsync()
+        public async Task<ApiResponse<List<AdminOrderSummaryResponseDTO>>> GetAllOrdersAsync(string? search, int? orderStatusId)
         {
-            var orders = await _context.Orders
-                .Include(o => o.User)
-                .OrderByDescending(o => o.CreatedAt)
-                .Select(o => new AdminOrderSummaryResponseDTO
-                {
-                    Id = o.Id,
-                    OrderStatusId = o.OrderStatusId,
-                    TotalAmountYer = o.TotalAmountYer,
-                    TotalAmountSar = o.TotalAmountSar,
-                    CreatedAt = o.CreatedAt,
-                    UserId = o.UserId,
-                    StoreName = o.User != null ? o.User.StoreName : null
-                })
-                .ToListAsync();
+            try
+            {
+                var query = _context.Orders
+                    .Include(o => o.User)
+                    .AsQueryable();
 
-            return new ApiResponse<List<AdminOrderSummaryResponseDTO>>(200, orders);
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    var cleanSearch = search.Trim();
+                    if (int.TryParse(cleanSearch, out int searchId))
+                    {
+                        query = query.Where(o => o.Id == searchId || (o.User != null && o.User.StoreName != null && o.User.StoreName.Contains(cleanSearch)));
+                    }
+                    else
+                    {
+                        query = query.Where(o => o.User != null && o.User.StoreName != null && o.User.StoreName.Contains(cleanSearch));
+                    }
+                }
+
+                if (orderStatusId.HasValue)
+                {
+                    query = query.Where(o => o.OrderStatusId == orderStatusId.Value);
+                }
+
+                var orders = await query
+                    .OrderByDescending(o => o.CreatedAt)
+                    .Select(o => new AdminOrderSummaryResponseDTO
+                    {
+                        Id = o.Id,
+                        OrderStatusId = o.OrderStatusId,
+                        TotalAmountYer = o.TotalAmountYer,
+                        TotalAmountSar = o.TotalAmountSar,
+                        CreatedAt = o.CreatedAt,
+                        UserId = o.UserId,
+                        StoreName = o.User != null ? o.User.StoreName : null
+                    })
+                    .ToListAsync();
+
+                return new ApiResponse<List<AdminOrderSummaryResponseDTO>>(200, orders);
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<List<AdminOrderSummaryResponseDTO>>(500, $"An error occurred while retrieving orders for admin: {ex.Message}");
+            }
         }
 
         public async Task<ApiResponse<OrderResponseDTO>> GetOrderDetailsForAdminAsync(int orderId)
         {
             var order = await _context.Orders
+                .IgnoreQueryFilters()
                 .Include(o => o.OrderProducts)
                     .ThenInclude(op => op.Product)
                 .Include(o => o.OrderProducts)
@@ -270,6 +345,7 @@ namespace BestPriceStore.Services.OrderService
         public async Task<ApiResponse<OrderResponseDTO>> UpdateOrderStatusAsync(int orderId, UpdateOrderStatusRequestDTO model)
         {
             var order = await _context.Orders
+                .IgnoreQueryFilters()
                 .Include(o => o.OrderProducts)
                     .ThenInclude(op => op.Product)
                 .Include(o => o.OrderProducts)
@@ -331,12 +407,42 @@ namespace BestPriceStore.Services.OrderService
             // If target status is Cancelled (5), restore stock
             if (target == 5)
             {
-                order.CancelledAt = DateTime.UtcNow;
+                order.CancelledAt = DateTimeHelper.GetYemeniTime();
                 foreach (var item in order.OrderProducts)
                 {
-                    if (item.ProductImage != null)
+                    var variation = await _context.ProductImages
+                        .IgnoreQueryFilters()
+                        .FirstOrDefaultAsync(pi => pi.Id == item.ProductImageId);
+
+                    if (variation != null)
                     {
-                        item.ProductImage.QuantityInStock += item.Quantity;
+                        var product = await _context.Products
+                            .IgnoreQueryFilters()
+                            .FirstOrDefaultAsync(p => p.Id == variation.ProductId);
+
+                        if (product != null)
+                        {
+                            if (!product.IsDeleted)
+                            {
+                                if (variation.IsDeleted)
+                                {
+                                    variation.IsDeleted = false;
+                                }
+                            }
+                            else // product is deleted
+                            {
+                                product.IsDeleted = false;
+                                _context.Products.Update(product);
+
+                                if (variation.IsDeleted)
+                                {
+                                    variation.IsDeleted = false;
+                                }
+                            }
+                        }
+
+                        variation.QuantityInStock += item.Quantity;
+                        _context.ProductImages.Update(variation);
                     }
                 }
             }
@@ -364,10 +470,8 @@ namespace BestPriceStore.Services.OrderService
         public async Task<ApiResponse<OrderResponseDTO>> EditOrderItemsAsync(int orderId, EditOrderItemsRequestDTO model)
         {
             var order = await _context.Orders
+                .IgnoreQueryFilters()
                 .Include(o => o.OrderProducts)
-                    .ThenInclude(op => op.Product)
-                .Include(o => o.OrderProducts)
-                    .ThenInclude(op => op.ProductImage)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
             if (order == null)
@@ -389,13 +493,57 @@ namespace BestPriceStore.Services.OrderService
                 var orderProductsCopy = order.OrderProducts.ToList();
                 foreach (var orderProduct in orderProductsCopy)
                 {
-                    var variation = orderProduct.ProductImage;
+                    // 1. Verify if quantity is increased
+                    if (requestItems.ContainsKey(orderProduct.ProductImageId))
+                    {
+                        int newQty = requestItems[orderProduct.ProductImageId];
+                        if (newQty > orderProduct.Quantity)
+                        {
+                            await transaction.RollbackAsync();
+                            return new ApiResponse<OrderResponseDTO>(400, 
+                                $"Increasing product quantity is not allowed. Representative must place a new order for additional quantities of variation ID {orderProduct.ProductImageId}.");
+                        }
+                    }
+
+                    // 2. Fetch variation (ProductImage) and parent Product using IgnoreQueryFilters to bypass soft-delete filter
+                    var variation = await _context.ProductImages
+                        .IgnoreQueryFilters()
+                        .FirstOrDefaultAsync(pi => pi.Id == orderProduct.ProductImageId);
+
                     if (variation == null) continue;
 
+                    var product = await _context.Products
+                        .IgnoreQueryFilters()
+                        .FirstOrDefaultAsync(p => p.Id == variation.ProductId);
+
+                    // 3. Process return (removal or quantity reduction)
                     if (!requestItems.ContainsKey(orderProduct.ProductImageId) || requestItems[orderProduct.ProductImageId] == 0)
                     {
                         // Item was removed/returned entirely
-                        variation.QuantityInStock += orderProduct.Quantity;
+                        int quantityToRestore = orderProduct.Quantity;
+
+                        if (product != null)
+                        {
+                            if (!product.IsDeleted)
+                            {
+                                if (variation.IsDeleted)
+                                {
+                                    variation.IsDeleted = false;
+                                }
+                            }
+                            else // product is deleted
+                            {
+                                product.IsDeleted = false;
+                                _context.Products.Update(product);
+
+                                if (variation.IsDeleted)
+                                {
+                                    variation.IsDeleted = false;
+                                }
+                            }
+                        }
+
+                        variation.QuantityInStock += quantityToRestore;
                         _context.ProductImages.Update(variation);
                         _context.OrderProducts.Remove(orderProduct);
                     }
@@ -404,16 +552,32 @@ namespace BestPriceStore.Services.OrderService
                         int newQty = requestItems[orderProduct.ProductImageId];
                         int diff = orderProduct.Quantity - newQty;
 
-                        if (diff < 0) // Quantity increased
+                        if (diff > 0) // Item quantity was reduced (returned partially)
                         {
-                            await transaction.RollbackAsync();
-                            return new ApiResponse<OrderResponseDTO>(400, 
-                                $"Increasing product quantity is not allowed. Representative must place a new order for additional quantities of variation ID {variation.Id}.");
-                        }
+                            if (product != null)
+                            {
+                                if (!product.IsDeleted)
+                                {
+                                    if (variation.IsDeleted)
+                                    {
+                                        variation.IsDeleted = false;
+                                    }
+                                }
+                                else // product is deleted
+                                {
+                                    product.IsDeleted = false;
+                                    _context.Products.Update(product);
 
-                        // Restore stock difference
-                        variation.QuantityInStock += diff;
-                        _context.ProductImages.Update(variation);
+                                    if (variation.IsDeleted)
+                                    {
+                                        variation.IsDeleted = false;
+                                    }
+                                }
+                            }
+
+                            variation.QuantityInStock += diff;
+                            _context.ProductImages.Update(variation);
+                        }
 
                         orderProduct.Quantity = newQty;
                         orderProduct.TotalAmount = orderProduct.UnitPrice * newQty;
@@ -464,6 +628,7 @@ namespace BestPriceStore.Services.OrderService
 
                 // Map to return response
                 var updatedOrder = await _context.Orders
+                    .IgnoreQueryFilters()
                     .Include(o => o.OrderProducts)
                         .ThenInclude(op => op.Product)
                     .Include(o => o.OrderProducts)

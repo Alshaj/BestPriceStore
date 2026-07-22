@@ -1,4 +1,5 @@
 using System;
+using BestPriceStore.Helpers;
 using BestPriceStore.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,9 @@ namespace BestPriceStore.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<Product>().HasQueryFilter(p => !p.IsDeleted);
+            builder.Entity<ProductImage>().HasQueryFilter(pi => !pi.IsDeleted);
 
             // Configure Relationships
             builder.Entity<OrderProduct>()
@@ -105,10 +109,12 @@ namespace BestPriceStore.Data
                 new ApplicationRole { Id = 2, Name = "Representative", NormalizedName = "REPRESENTATIVE" }
             );
 
-            // Seed Currencies
+            // Seed Currencies using Yemeni time
+            var yemenNow = DateTimeHelper.GetYemeniTime();
+
             builder.Entity<Currency>().HasData(
-                new Currency { Id = 1, Name = "ريال يمني", CreatedAt = DateTime.UtcNow },
-                new Currency { Id = 2, Name = "ريال سعودي", CreatedAt = DateTime.UtcNow }
+                new Currency { Id = 1, Name = "ريال يمني", CreatedAt = yemenNow },
+                new Currency { Id = 2, Name = "ريال سعودي", CreatedAt = yemenNow }
             );
 
             // Seed OrderStatuses

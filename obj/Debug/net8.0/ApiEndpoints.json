@@ -1,5 +1,94 @@
 [
   {
+    "ContainingType": "BestPriceStore.Controllers.AdminDashboardController",
+    "Method": "GetDashboardStats",
+    "RelativePath": "api/admin/dashboard",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BestPriceStore.Controllers.AdminOrdersController",
+    "Method": "GetAllOrders",
+    "RelativePath": "api/admin/orders",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "search",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "orderStatusId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BestPriceStore.Controllers.AdminOrdersController",
+    "Method": "GetOrderDetails",
+    "RelativePath": "api/admin/orders/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BestPriceStore.Controllers.AdminOrdersController",
+    "Method": "EditOrderItems",
+    "RelativePath": "api/admin/orders/{id}/items",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "model",
+        "Type": "BestPriceStore.DTOs.OrderDTOs.EditOrderItemsRequestDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BestPriceStore.Controllers.AdminOrdersController",
+    "Method": "UpdateOrderStatus",
+    "RelativePath": "api/admin/orders/{id}/status",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "model",
+        "Type": "BestPriceStore.DTOs.OrderDTOs.UpdateOrderStatusRequestDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "BestPriceStore.Controllers.AuthController",
     "Method": "Login",
     "RelativePath": "api/Auth/login",
@@ -68,7 +157,13 @@
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "search",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": []
   },
   {
@@ -136,22 +231,6 @@
   },
   {
     "ContainingType": "BestPriceStore.Controllers.ImagesController",
-    "Method": "DeleteImage",
-    "RelativePath": "api/Images",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "request",
-        "Type": "System.String",
-        "IsRequired": false
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "BestPriceStore.Controllers.ImagesController",
     "Method": "UploadImage",
     "RelativePath": "api/Images/upload",
     "HttpMethod": "POST",
@@ -164,6 +243,80 @@
         "IsRequired": false
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BestPriceStore.Controllers.OrdersController",
+    "Method": "PlaceOrder",
+    "RelativePath": "api/Orders",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "model",
+        "Type": "BestPriceStore.DTOs.OrderDTOs.CreateOrderRequestDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BestPriceStore.Controllers.OrdersController",
+    "Method": "GetMyOrders",
+    "RelativePath": "api/Orders",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "orderStatusId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BestPriceStore.Controllers.OrdersController",
+    "Method": "GetOrderDetails",
+    "RelativePath": "api/Orders/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BestPriceStore.Controllers.OrdersController",
+    "Method": "CancelOrder",
+    "RelativePath": "api/Orders/{id}/cancel",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BestPriceStore.Controllers.OrderStatusesController",
+    "Method": "GetAll",
+    "RelativePath": "api/OrderStatuses",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {
@@ -241,6 +394,105 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "BestPriceStore.Controllers.ProductsController",
+    "Method": "Delete",
+    "RelativePath": "api/Products/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BestPriceStore.Controllers.ProductsController",
+    "Method": "Activate",
+    "RelativePath": "api/Products/{id}/activate",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BestPriceStore.Controllers.ProductsController",
+    "Method": "Deactivate",
+    "RelativePath": "api/Products/{id}/deactivate",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BestPriceStore.Controllers.ProductsController",
+    "Method": "GetBrowseProducts",
+    "RelativePath": "api/Products/browse",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "search",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "categoryId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BestPriceStore.Controllers.ProductsController",
+    "Method": "GetLatestProducts",
+    "RelativePath": "api/Products/latest",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BestPriceStore.Controllers.ProductsController",
+    "Method": "GetTopSellingProducts",
+    "RelativePath": "api/Products/top-selling",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "BestPriceStore.Controllers.UsersController",
     "Method": "Approve",
     "RelativePath": "api/Users/{id}/approve",
@@ -295,7 +547,13 @@
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "search",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": []
   },
   {

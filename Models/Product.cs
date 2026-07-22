@@ -19,6 +19,7 @@ namespace BestPriceStore.Models
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public bool IsActive { get; set; }
+        public bool IsDeleted { get; set; }
 
         public ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
     }

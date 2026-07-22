@@ -23,9 +23,9 @@ namespace BestPriceStore.Controllers
         /// Retrieves all orders in the system for all users.
         /// </summary>
         [HttpGet]
-        public async Task<IActionResult> GetAllOrders()
+        public async Task<IActionResult> GetAllOrders([FromQuery] string? search, [FromQuery] int? orderStatusId)
         {
-            var response = await _orderService.GetAllOrdersAsync();
+            var response = await _orderService.GetAllOrdersAsync(search, orderStatusId);
 
             if (response.StatusCode != 200)
             {

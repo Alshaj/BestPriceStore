@@ -5,6 +5,154 @@
     "version": "1.0"
   },
   "paths": {
+    "/api/admin/dashboard": {
+      "get": {
+        "tags": [
+          "AdminDashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/admin/orders": {
+      "get": {
+        "tags": [
+          "AdminOrders"
+        ],
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderStatusId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/admin/orders/{id}": {
+      "get": {
+        "tags": [
+          "AdminOrders"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/admin/orders/{id}/status": {
+      "put": {
+        "tags": [
+          "AdminOrders"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrderStatusRequestDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrderStatusRequestDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrderStatusRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/admin/orders/{id}/items": {
+      "put": {
+        "tags": [
+          "AdminOrders"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditOrderItemsRequestDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditOrderItemsRequestDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditOrderItemsRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Auth/register": {
       "post": {
         "tags": [
@@ -117,6 +265,15 @@
       "get": {
         "tags": [
           "Categories"
+        ],
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -261,19 +418,107 @@
         }
       }
     },
-    "/api/Images": {
+    "/api/Orders": {
       "post": {
         "tags": [
-          "Images"
+          "Orders"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderRequestDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderRequestDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Orders"
         ],
         "parameters": [
           {
-            "name": "request",
+            "name": "orderStatusId",
             "in": "query",
             "schema": {
-              "type": "string"
+              "type": "integer",
+              "format": "int32"
             }
           }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Orders/{id}": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Orders/{id}/cancel": {
+      "put": {
+        "tags": [
+          "Orders"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/OrderStatuses": {
+      "get": {
+        "tags": [
+          "OrderStatuses"
         ],
         "responses": {
           "200": {
@@ -340,6 +585,53 @@
         }
       }
     },
+    "/api/Products/browse": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Products/{id}": {
       "get": {
         "tags": [
@@ -396,6 +688,97 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Products/{id}/activate": {
+      "put": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Products/{id}/deactivate": {
+      "put": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Products/latest": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Products/top-selling": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -485,6 +868,15 @@
         "tags": [
           "Users"
         ],
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -548,6 +940,22 @@
         },
         "additionalProperties": false
       },
+      "CreateOrderRequestDTO": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItemRequestDTO"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateProductRequestDTO": {
         "required": [
           "name"
@@ -586,6 +994,41 @@
               "$ref": "#/components/schemas/ProductImageRequestDTO"
             },
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EditOrderItemModel": {
+        "required": [
+          "productImageId",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "productImageId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "maximum": 2147483647,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EditOrderItemsRequestDTO": {
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EditOrderItemModel"
+            }
           }
         },
         "additionalProperties": false
@@ -664,6 +1107,26 @@
               "type": "string"
             },
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "OrderItemRequestDTO": {
+        "required": [
+          "productImageId",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "productImageId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "quantity": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -795,6 +1258,21 @@
             "maxLength": 255,
             "minLength": 0,
             "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateOrderStatusRequestDTO": {
+        "required": [
+          "orderStatusId"
+        ],
+        "type": "object",
+        "properties": {
+          "orderStatusId": {
+            "maximum": 5,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
