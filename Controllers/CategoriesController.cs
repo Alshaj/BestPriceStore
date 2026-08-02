@@ -1,8 +1,11 @@
 using BestPriceStore.DTOs;
 using BestPriceStore.DTOs.CategoryDTOs;
+using BestPriceStore.Models;
 using BestPriceStore.Services.CategoryService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -13,7 +16,7 @@ namespace BestPriceStore.Controllers
     public class CategoriesController : ControllerBase
     {
         private readonly ICategoryService _categoryService;
-
+        
         public CategoriesController(ICategoryService categoryService)
         {
             _categoryService = categoryService;
@@ -31,7 +34,7 @@ namespace BestPriceStore.Controllers
             return Ok(response);
         }
 
-        
+
 
         [HttpPost]
         [Authorize(Roles = "Admin")]

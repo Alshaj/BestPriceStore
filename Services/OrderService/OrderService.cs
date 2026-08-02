@@ -281,6 +281,7 @@ namespace BestPriceStore.Services.OrderService
             try
             {
                 var query = _context.Orders
+                    .Where(o => !o.IsDeleted)
                     .Include(o => o.User)
                     .AsQueryable();
 
@@ -334,7 +335,7 @@ namespace BestPriceStore.Services.OrderService
                     .ThenInclude(op => op.ProductImage)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
-            if (order == null)
+            if (order == null || order.IsDeleted)
             {
                 return new ApiResponse<OrderResponseDTO>(404, "Order not found.");
             }
@@ -352,7 +353,7 @@ namespace BestPriceStore.Services.OrderService
                     .ThenInclude(op => op.ProductImage)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
-            if (order == null)
+            if (order == null || order.IsDeleted)
             {
                 return new ApiResponse<OrderResponseDTO>(404, "Order not found.");
             }
@@ -474,7 +475,7 @@ namespace BestPriceStore.Services.OrderService
                 .Include(o => o.OrderProducts)
                 .FirstOrDefaultAsync(o => o.Id == orderId);
 
-            if (order == null)
+            if (order == null || order.IsDeleted)
             {
                 return new ApiResponse<OrderResponseDTO>(404, "Order not found.");
             }
@@ -666,6 +667,25 @@ namespace BestPriceStore.Services.OrderService
                     CurrencyId = op.CurrencyId
                 }).ToList()
             };
+        }
+
+        public async Task<ApiResponse<ConfirmationResponseDTO>> SoftDeleteOrderAsync(int orderId)
+        {
+            var order = await _context.Orders
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null || order.IsDeleted)
+            {
+                return new ApiResponse<ConfirmationResponseDTO>(404, "Order not found.");
+            }
+
+            order.IsDeleted = true;
+            await _context.SaveChangesAsync();
+
+            return new ApiResponse<ConfirmationResponseDTO>(200, new ConfirmationResponseDTO
+            {
+                Message = "Order has been successfully deleted."
+            });
         }
     }
 }

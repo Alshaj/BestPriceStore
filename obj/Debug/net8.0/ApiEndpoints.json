@@ -48,6 +48,22 @@
   },
   {
     "ContainingType": "BestPriceStore.Controllers.AdminOrdersController",
+    "Method": "DeleteOrder",
+    "RelativePath": "api/admin/orders/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BestPriceStore.Controllers.AdminOrdersController",
     "Method": "EditOrderItems",
     "RelativePath": "api/admin/orders/{id}/items",
     "HttpMethod": "PUT",
@@ -552,6 +568,22 @@
         "Name": "search",
         "Type": "System.String",
         "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BestPriceStore.Controllers.UsersController",
+    "Method": "HardDeleteRepresentative",
+    "RelativePath": "api/Users/representatives/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []

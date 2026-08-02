@@ -78,5 +78,17 @@ namespace BestPriceStore.Controllers
             }
             return Ok(response);
         }
+
+        [HttpDelete("representatives/{id}")]
+        [Authorize(Roles = "Admin")] // Only Admin can hard delete a representative
+        public async Task<IActionResult> HardDeleteRepresentative(int id)
+        {
+            var response = await _userService.HardDeleteRepresentativeAsync(id);
+            if (response.StatusCode != 200)
+            {
+                return StatusCode((int)response.StatusCode, response);
+            }
+            return Ok(response);
+        }
     }
 }

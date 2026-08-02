@@ -19,6 +19,7 @@ namespace BestPriceStore.Models
         
         public DateTime CreatedAt { get; set; }
         public DateTime? CancelledAt { get; set; }
+        public bool IsDeleted { get; set; }
 
         public ICollection<OrderProduct> OrderProducts { get; set; } = new List<OrderProduct>();
     }

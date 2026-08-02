@@ -2,6 +2,7 @@ using BestPriceStore.Data;
 using BestPriceStore.DTOs;
 using BestPriceStore.DTOs.UserDTOs;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,10 +12,12 @@ namespace BestPriceStore.Services.UserService
     public class UserService : IUserService
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _context;
 
-        public UserService(UserManager<ApplicationUser> userManager)
+        public UserService(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
         {
             _userManager = userManager;
+            _context = context;
         }
 
         public async Task<ApiResponse<ConfirmationResponseDTO>> ApproveUserAsync(int id)
@@ -151,6 +154,76 @@ namespace BestPriceStore.Services.UserService
             }).ToList();
 
             return new ApiResponse<List<UserResponseDTO>>(200, responseData);
+        }
+
+        public async Task<ApiResponse<ConfirmationResponseDTO>> HardDeleteRepresentativeAsync(int id)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+
+            if (user == null)
+            {
+                return new ApiResponse<ConfirmationResponseDTO>(404, "User not found.");
+            }
+
+            var isRepresentative = await _userManager.IsInRoleAsync(user, "Representative");
+            if (!isRepresentative)
+            {
+                return new ApiResponse<ConfirmationResponseDTO>(400, "The specified user is not a representative.");
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Delete user's Cart & CartItems
+                var cart = await _context.Carts
+                    .Include(c => c.CartItems)
+                    .FirstOrDefaultAsync(c => c.UserId == id);
+
+                if (cart != null)
+                {
+                    _context.CartItems.RemoveRange(cart.CartItems);
+                    _context.Carts.Remove(cart);
+                }
+
+                // Delete user's Orders & OrderProducts
+                var orders = await _context.Orders
+                    .Include(o => o.OrderProducts)
+                    .Where(o => o.UserId == id)
+                    .ToListAsync();
+
+                foreach (var order in orders)
+                {
+                    _context.OrderProducts.RemoveRange(order.OrderProducts);
+                }
+                _context.Orders.RemoveRange(orders);
+
+                await _context.SaveChangesAsync();
+
+                // Delete user entity and Identity user roles/claims/tokens
+                var deleteResult = await _userManager.DeleteAsync(user);
+                if (!deleteResult.Succeeded)
+                {
+                    await transaction.RollbackAsync();
+                    return new ApiResponse<ConfirmationResponseDTO>
+                    {
+                        StatusCode = 400,
+                        Success = false,
+                        Errors = deleteResult.Errors.Select(e => e.Description).ToList()
+                    };
+                }
+
+                await transaction.CommitAsync();
+
+                return new ApiResponse<ConfirmationResponseDTO>(200, new ConfirmationResponseDTO
+                {
+                    Message = "Representative and all associated data have been permanently deleted."
+                });
+            }
+            catch (System.Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return new ApiResponse<ConfirmationResponseDTO>(500, $"An error occurred while deleting the representative: {ex.Message}");
+            }
         }
     }
 }
