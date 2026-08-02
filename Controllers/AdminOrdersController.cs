@@ -87,5 +87,19 @@ namespace BestPriceStore.Controllers
             
             return Ok(response);
         }
+
+        /// <summary>
+        /// Soft deletes an order by setting IsDeleted = true.
+        /// </summary>
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteOrder(int id)
+        {
+            var response = await _orderService.SoftDeleteOrderAsync(id);
+            if (response.StatusCode != 200)
+            {
+                return StatusCode((int)response.StatusCode, response);
+            }
+            return Ok(response);
+        }
     }
 }

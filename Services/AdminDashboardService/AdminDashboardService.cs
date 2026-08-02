@@ -22,7 +22,7 @@ namespace BestPriceStore.Services.AdminDashboardService
         {
             // 1. Sales metrics (Sum of Delivered orders)
             var deliveredOrders = await _context.Orders
-                .Where(o => o.OrderStatusId == 4)
+                .Where(o => !o.IsDeleted && o.OrderStatusId == 4)
                 .Select(o => new { o.TotalAmountYer, o.TotalAmountSar })
                 .ToListAsync();
 
@@ -31,6 +31,7 @@ namespace BestPriceStore.Services.AdminDashboardService
 
             // 2. Orders metrics
             var orderStatusCounts = await _context.Orders
+                .Where(o => !o.IsDeleted)
                 .GroupBy(o => o.OrderStatusId)
                 .Select(g => new { StatusId = g.Key, Count = g.Count() })
                 .ToListAsync();

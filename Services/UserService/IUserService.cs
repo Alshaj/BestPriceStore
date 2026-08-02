@@ -9,5 +9,6 @@ namespace BestPriceStore.Services.UserService
         Task<ApiResponse<ConfirmationResponseDTO>> SuspendUserAsync(int id);
         Task<ApiResponse<ConfirmationResponseDTO>> UpdateProfileAsync(int id, BestPriceStore.DTOs.UserDTOs.UpdateProfileRequestDTO model);
         Task<ApiResponse<System.Collections.Generic.List<BestPriceStore.DTOs.UserDTOs.UserResponseDTO>>> GetAllRepresentativesAsync(string? search);
+        Task<ApiResponse<ConfirmationResponseDTO>> HardDeleteRepresentativeAsync(int id);
     }
 }
